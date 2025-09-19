@@ -82,14 +82,51 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">
-                        <i class="fas fa-upload"></i> Upload de Fotos
+                        <i class="fas fa-upload"></i> Upload de Fotos com IA
                     </h5>
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        <strong>Funcionalidade em desenvolvimento:</strong> 
-                        Em breve você poderá fazer upload de fotos diretamente pelo painel.
-                        Por enquanto, adicione as fotos manualmente na pasta <code>static/photos/</code>.
+                        <i class="fas fa-robot"></i>
+                        <strong>Detecção Inteligente:</strong> 
+                        O sistema usa AWS Rekognition para detectar números automaticamente (quando configurado).
+                        <br><small>Configure suas credenciais AWS para ativar todas as funcionalidades.</small>
                     </div>
+                    
+                    {% if events %}
+                        <form method="POST" action="{{ url_for('upload_photo') }}" enctype="multipart/form-data">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="event_id" class="form-label">Evento</label>
+                                        <select class="form-control" id="event_id" name="event_id" required>
+                                            <option value="">Selecione um evento</option>
+                                            {% for event in events %}
+                                                <option value="{{ event.id }}">{{ event.name }} - {{ event.date }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="photo" class="form-label">Foto</label>
+                                        <input type="file" class="form-control" id="photo" name="photo" accept="image/*" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="runner_number" class="form-label">Número do Corredor (opcional - será detectado automaticamente)</label>
+                                <input type="text" class="form-control" id="runner_number" name="runner_number" 
+                                       placeholder="Ex: 123 (deixe vazio para detecção automática)">
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-upload"></i> Upload com Detecção IA
+                            </button>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Crie um evento primeiro para fazer upload de fotos.
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

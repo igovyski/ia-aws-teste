@@ -6,16 +6,26 @@ Como fotógrafo de corridas, identifiquei a dificuldade que corredores enfrentam
 
 ## Como a solução foi construída
 
-A solução foi desenvolvida usando Flask (Python) com as seguintes funcionalidades:
-- **Upload e organização de fotos** por evento
+A solução foi desenvolvida usando Flask (Python) com **MCP (Model Context Protocol)** para integração com AWS:
+
+### Funcionalidades principais:
+- **Upload inteligente de fotos** com detecção automática de números via IA
 - **Sistema de busca** por número de peito do corredor
 - **Carrinho de compras** para múltiplas fotos
 - **Processamento de pagamentos** simulado
 - **Painel administrativo** para fotógrafos
 - **API REST** para integração com outros sistemas
 
+### Funcionalidades MCP + AWS:
+- **Detecção automática de números** usando AWS Rekognition
+- **Análise de qualidade** das fotos
+- **Upload para S3** (quando configurado)
+- **Processamento inteligente** de imagens
+
 ### Tecnologias utilizadas:
 - **Backend**: Flask, SQLite, Pillow (processamento de imagens)
+- **MCP (Model Context Protocol)**: Integração com AWS Rekognition
+- **AWS Services**: Rekognition (detecção de texto), S3 (armazenamento)
 - **Frontend**: HTML5, CSS3, JavaScript vanilla
 - **Pagamentos**: Simulação de gateway de pagamento
 - **Deploy**: Preparado para AWS (EC2, S3, RDS)
@@ -25,6 +35,8 @@ A solução foi desenvolvida usando Flask (Python) com as seguintes funcionalida
 ### Pré-requisitos
 - Python 3.8+
 - pip
+- Conta AWS (para funcionalidades MCP)
+- AWS CLI configurado (opcional)
 
 ### Instalação
 ```bash
@@ -34,6 +46,9 @@ cd race-photo-marketplace
 
 # Instale as dependências
 pip install -r requirements.txt
+
+# Configure AWS (opcional - para funcionalidades MCP)
+aws configure
 
 # Execute as migrações do banco
 python src/app.py init-db
@@ -60,7 +75,7 @@ O aplicativo estará disponível em `http://localhost:5000`
 2. **Implementação de pagamentos reais** (Stripe/PayPal)
 3. **Sistema de notificações** por email/SMS
 4. **App mobile** para corredores
-5. **IA para reconhecimento facial** automático
+5. **IA para reconhecimento facial** automático (já implementado via MCP)
 6. **Sistema de watermark** dinâmico
 7. **Analytics** para fotógrafos
 
@@ -75,7 +90,7 @@ O aplicativo estará disponível em `http://localhost:5000`
 7. "Crie documentação da API REST"
 8. "Configure estrutura para deploy na AWS"
 
-## Arquitetura
+## Arquitetura com MCP
 
 ```mermaid
 graph TB
@@ -84,8 +99,29 @@ graph TB
     C --> D[SQLite/RDS]
     C --> E[S3 - Fotos]
     C --> F[Gateway Pagamento]
+    C --> H[MCP Server]
+    H --> I[AWS Rekognition]
+    H --> J[AWS S3]
     G[Admin Panel] --> C
+    G --> H
 ```
+
+## Funcionalidades MCP Implementadas
+
+### 1. Detecção Automática de Números
+- Upload de foto → MCP → AWS Rekognition → Números detectados
+- Confiança mínima de 80% para aceitar detecções
+- Fallback para entrada manual
+
+### 2. Análise de Qualidade
+- Avaliação automática da nitidez da foto
+- Score de 0-100 para qualidade
+- Rejeição automática de fotos de baixa qualidade
+
+### 3. Upload Inteligente para S3
+- Organização automática por evento
+- Geração de URLs públicas
+- Backup automático na nuvem
 
 ## Estimativa de custos AWS (mensal)
 

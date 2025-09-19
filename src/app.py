@@ -7,6 +7,8 @@ from werkzeug.utils import secure_filename
 from PIL import Image
 import uuid
 from datetime import datetime
+from aws_mcp_service import aws_mcp
+import json
 
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 app.config['SECRET_KEY'] = 'your-secret-key-here'
@@ -288,6 +290,87 @@ def create_event():
     flash('Evento criado com sucesso!')
     return redirect(url_for('admin'))
 
+@app.route('/admin/upload_photo', methods=['POST'])
+@login_required
+def upload_photo():
+    if not current_user.is_admin:
+        return redirect(url_for('admin'))
+    
+    if 'photo' not in request.files:
+        flash('Nenhuma foto selecionada')
+        return redirect(url_for('admin'))
+    
+    file = request.files['photo']
+    event_id = request.form['event_id']
+    
+    if file.filename == '':
+        flash('Nenhuma foto selecionada')
+        return redirect(url_for('admin'))
+    
+    if file:
+        filename = secure_filename(file.filename)
+        unique_filename = f"{uuid.uuid4()}_{filename}"
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+        file.save(file_path)
+        
+        # Usar AWS MCP para detectar números automaticamente
+        try:
+            # Detectar números de peito usando AWS Rekognition
+            detection_result = aws_mcp.detect_runner_numbers(file_path)
+            
+            runner_numbers = []
+            if detection_result.get('success') and detection_result.get('numbers'):
+                runner_numbers = [item['number'] for item in detection_result['numbers']]
+            
+            # Analisar qualidade da foto
+            quality_result = aws_mcp.analyze_photo_quality(file_path)
+            
+            # Informações básicas da imagem
+            image_info = aws_mcp.get_basic_image_info(file_path)
+            
+            # Salvar no banco
+            conn = get_db_connection()
+            runner_number_str = ','.join(runner_numbers) if runner_numbers else request.form.get('runner_number', '')
+            
+            conn.execute('''
+                INSERT INTO photos (filename, event_id, runner_number, price)
+                VALUES (?, ?, ?, ?)
+            ''', (unique_filename, event_id, runner_number_str, 15.00))
+            conn.commit()
+            conn.close()
+            
+            if runner_numbers:
+                flash(f'Foto enviada! Números detectados automaticamente: {", ".join(runner_numbers)}')
+            elif detection_result.get('error'):
+                flash(f'Foto enviada! Erro na detecção: {detection_result["error"]}')
+            else:
+                flash('Foto enviada! Nenhum número detectado automaticamente.')
+                
+        except Exception as e:
+            flash(f'Foto enviada, mas erro na detecção automática: {str(e)}')
+    
+    return redirect(url_for('admin'))
+
+@app.route('/api/mcp/detect_numbers', methods=['POST'])
+@login_required
+def api_detect_numbers():
+    """API endpoint para detecção de números via AWS MCP"""
+    if not current_user.is_admin:
+        return jsonify({'error': 'Acesso negado'}), 403
+    
+    data = request.get_json()
+    image_path = data.get('image_path')
+    
+    if not image_path:
+        return jsonify({'error': 'Caminho da imagem não fornecido'}), 400
+    
+    try:
+        result = aws_mcp.detect_runner_numbers(image_path)
+        return jsonify(result)
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 if __name__ == '__main__':
     # Criar diretório de uploads se não existir
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -298,4 +381,11 @@ if __name__ == '__main__':
         print("Banco de dados inicializado!")
     else:
         init_db()  # Sempre inicializar na primeira execução
+        
+        # Inicializar AWS MCP
+        if aws_mcp.aws_available:
+            print("AWS MCP disponível!")
+        else:
+            print("AWS MCP não configurado - funcionalidades limitadas")
+        
         app.run(debug=True)
