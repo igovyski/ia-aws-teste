@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-search"></i> Buscar Fotos
+            </h2>
+            
+            <form action="{{ url_for('search') }}" method="GET" class="mb-4">
+                <div class="row">
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" name="runner_number" 
+                               placeholder="Digite o número do peito" value="{{ runner_number }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            {% if runner_number %}
+                <h4 class="mb-3">
+                    Resultados para: <span class="text-primary">#{{ runner_number }}</span>
+                    <small class="text-muted">({{ photos|length }} fotos encontradas)</small>
+                </h4>
+            {% endif %}
+            
+            {% if photos %}
+                <div class="row">
+                    {% for photo in photos %}
+                        <div class="col-md-3 mb-4">
+                            <div class="card photo-card h-100">
+                                <img src="{{ url_for('static', filename='photos/' + photo.filename) }}" 
+                                     class="card-img-top" alt="Foto #{{ photo.runner_number }}"
+                                     style="height: 200px; object-fit: cover;">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-hashtag"></i> {{ photo.runner_number }}
+                                    </h6>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            <i class="fas fa-running"></i> {{ photo.event_name }}<br>
+                                            <i class="fas fa-calendar"></i> {{ photo.event_date }}
+                                        </small>
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="h5 text-success mb-0">
+                                            R$ {{ "%.2f"|format(photo.price) }}
+                                        </span>
+                                        {% if current_user.is_authenticated %}
+                                            <a href="{{ url_for('add_to_cart', photo_id=photo.id) }}" 
+                                               class="btn btn-primary btn-sm">
+                                                <i class="fas fa-cart-plus"></i>
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-sm">
+                                                Login
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% elif runner_number %}
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h4>Nenhuma foto encontrada</h4>
+                    <p class="text-muted">
+                        Não encontramos fotos para o número <strong>#{{ runner_number }}</strong>.<br>
+                        Verifique se o número está correto ou tente outro evento.
+                    </p>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-camera fa-3x text-muted mb-3"></i>
+                    <h4>Digite um número para buscar</h4>
+                    <p class="text-muted">Use o campo acima para encontrar suas fotos</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

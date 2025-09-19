@@ -1,0 +1,6 @@
+Este diretório é onde as fotos de corrida serão armazenadas.
+
+Para testar a aplicação, adicione algumas fotos aqui e registre-as no banco de dados através do painel administrativo.
+
+Formatos suportados: JPG, PNG, WEBP
+Tamanho máximo: 16MB por foto

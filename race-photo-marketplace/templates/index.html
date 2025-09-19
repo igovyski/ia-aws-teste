@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">
+            <i class="fas fa-camera"></i> Encontre suas fotos de corrida
+        </h1>
+        <p class="lead">Busque por número do peito e compre suas melhores momentos</p>
+        
+        <form action="{{ url_for('search') }}" method="GET" class="mt-4">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="input-group input-group-lg">
+                        <input type="text" class="form-control" name="runner_number" 
+                               placeholder="Digite seu número do peito" required>
+                        <button class="btn btn-warning" type="submit">
+                            <i class="fas fa-search"></i> Buscar Fotos
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="container py-5">
+    <h2 class="text-center mb-5">Eventos Recentes</h2>
+    
+    {% if events %}
+        <div class="row">
+            {% for event in events %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-running text-primary"></i> {{ event.name }}
+                            </h5>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i> {{ event.date }}<br>
+                                    <i class="fas fa-map-marker-alt"></i> {{ event.location }}<br>
+                                    <i class="fas fa-images"></i> {{ event.photo_count }} fotos disponíveis
+                                </small>
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('event_photos', event_id=event.id) }}" 
+                               class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye"></i> Ver Fotos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center">
+            <i class="fas fa-camera fa-3x text-muted mb-3"></i>
+            <h4>Nenhum evento disponível</h4>
+            <p class="text-muted">Em breve teremos fotos de corridas incríveis!</p>
+        </div>
+    {% endif %}
+</div>
+
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <i class="fas fa-search fa-3x text-primary mb-3"></i>
+                <h4>Busca Fácil</h4>
+                <p>Encontre suas fotos rapidamente usando seu número do peito</p>
+            </div>
+            <div class="col-md-4">
+                <i class="fas fa-shopping-cart fa-3x text-primary mb-3"></i>
+                <h4>Compra Segura</h4>
+                <p>Carrinho de compras simples e pagamento seguro</p>
+            </div>
+            <div class="col-md-4">
+                <i class="fas fa-download fa-3x text-primary mb-3"></i>
+                <h4>Download Rápido</h4>
+                <p>Receba suas fotos em alta qualidade por email</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

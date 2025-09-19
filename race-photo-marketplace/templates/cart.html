@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">
+        <i class="fas fa-shopping-cart"></i> Meu Carrinho
+    </h2>
+    
+    {% if items %}
+        <div class="row">
+            <div class="col-md-8">
+                {% for item in items %}
+                    <div class="card mb-3">
+                        <div class="row g-0">
+                            <div class="col-md-3">
+                                <img src="{{ url_for('static', filename='photos/' + item.filename) }}" 
+                                     class="img-fluid rounded-start h-100" alt="Foto"
+                                     style="object-fit: cover;">
+                            </div>
+                            <div class="col-md-9">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="card-title">{{ item.event_name }}</h5>
+                                            <p class="card-text">
+                                                <small class="text-muted">
+                                                    Arquivo: {{ item.filename }}
+                                                </small>
+                                            </p>
+                                        </div>
+                                        <div class="text-end">
+                                            <h4 class="text-success">R$ {{ "%.2f"|format(item.price) }}</h4>
+                                            <a href="{{ url_for('remove_from_cart', item_id=item.id) }}" 
+                                               class="btn btn-outline-danger btn-sm">
+                                                <i class="fas fa-trash"></i> Remover
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Resumo do Pedido</h5>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <span>{{ items|length }} foto(s)</span>
+                            <span>R$ {{ "%.2f"|format(total) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Taxa de processamento</span>
+                            <span>R$ 0,00</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>Total</strong>
+                            <strong class="text-success">R$ {{ "%.2f"|format(total) }}</strong>
+                        </div>
+                        <hr>
+                        <a href="{{ url_for('checkout') }}" class="btn btn-success w-100">
+                            <i class="fas fa-credit-card"></i> Finalizar Compra
+                        </a>
+                        <small class="text-muted d-block mt-2 text-center">
+                            Pagamento seguro via cartão de crédito
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+            <h4>Seu carrinho está vazio</h4>
+            <p class="text-muted">Adicione algumas fotos incríveis ao seu carrinho!</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-search"></i> Buscar Fotos
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
